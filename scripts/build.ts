@@ -25,6 +25,7 @@ const main = async () => {
 	try {
 		await esbuild.build({
 			entryPoints: ["src/cli/index.ts"],
+			external: ["/node_modules/*"],
 			bundle: true,
 			allowOverwrite: true,
 			platform: "node",
@@ -43,6 +44,7 @@ const main = async () => {
 	try {
 		await esbuild.build({
 			entryPoints: ["src/lib/index.ts"],
+			external: ["/node_modules/*"],
 			bundle: true,
 			allowOverwrite: true,
 			platform: "node",
