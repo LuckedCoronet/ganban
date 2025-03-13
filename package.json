@@ -1,0 +1,49 @@
+{
+	"name": "ganban",
+	"version": "0.1.0",
+	"description": "Minecraft Bedrock Addons meet the power of TypeScript.",
+	"author": "Lucked Coronet",
+	"license": "MIT",
+	"keywords": [
+		"typescript",
+		"minecraft"
+	],
+	"scripts": {
+		"build": "tsx scripts/build.ts",
+		"build:watch": "tsx scripts/build-watch.ts",
+		"types": "tsc --noEmit"
+	},
+	"type": "module",
+	"main": "dist/lib.js",
+	"types": "dist/lib.d.ts",
+	"bin": {
+		"ganban": "dist/cli.js"
+	},
+	"dependencies": {
+		"@inquirer/prompts": "^7.3.3",
+		"chalk": "^5.4.1",
+		"commander": "^13.1.0",
+		"cosmiconfig": "^9.0.0",
+		"esbuild": "^0.25.1",
+		"fs-extra": "^11.3.0",
+		"ora": "^8.2.0",
+		"tsx": "^4.19.3",
+		"zod": "^3.24.2"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^11.0.4",
+		"@types/node": "^22.13.10",
+		"typescript": "^5.8.2"
+	},
+	"pnpm": {
+		"ignoredBuiltDependencies": [
+			"esbuild"
+		]
+	},
+	"engines": {
+		"node": ">= 18"
+	},
+	"os": [
+		"win32"
+	]
+}
