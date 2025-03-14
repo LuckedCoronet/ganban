@@ -11,7 +11,9 @@
 	"scripts": {
 		"build": "tsx scripts/build.ts",
 		"build:watch": "tsx scripts/build-watch.ts",
-		"types": "tsc --noEmit"
+		"types": "tsc --noEmit",
+		"test": "vitest",
+		"test:run": "vitest run"
 	},
 	"type": "module",
 	"main": "dist/lib.js",
