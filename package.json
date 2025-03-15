@@ -1,7 +1,7 @@
 {
 	"name": "ganban",
 	"version": "0.1.0",
-	"description": "Minecraft Bedrock Addons meet the power of TypeScript.",
+	"description": "A simple Minecraft Bedrock addon compiler that does little more than copy folders",
 	"author": "Lucked Coronet",
 	"license": "MIT",
 	"keywords": [
