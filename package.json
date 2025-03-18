@@ -9,6 +9,10 @@
 		"compiler",
 		"typescript"
 	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/LuckedCoronet/ganban.git"
+	},
 	"scripts": {
 		"types": "tsc --noEmit",
 		"build": "tsc --noEmit && tsx scripts/build.ts",
