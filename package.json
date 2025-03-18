@@ -9,6 +9,11 @@
 		"compiler",
 		"typescript"
 	],
+	"scripts": {
+		"types": "tsc --noEmit",
+		"build": "tsc --noEmit && tsx scripts/build.ts",
+		"build:watch": "tsx scripts/build-watch.ts"
+	},
 	"os": [
 		"win32"
 	],
