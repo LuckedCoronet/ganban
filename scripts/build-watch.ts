@@ -15,12 +15,12 @@ const getCurrentTimeToPrint = () => {
 const main = async () => {
 	const bundleCliCtx = await esbuild.context({
 		entryPoints: ["src/cli/index.ts"],
-		external: ["/node_modules/*"],
 		bundle: true,
 		allowOverwrite: true,
 		platform: "node",
 		target: "node16",
 		format: "esm",
+		packages: "external",
 		outfile: "dist/cli.js",
 		banner: { js: "#!/usr/bin/env node" },
 
@@ -43,12 +43,12 @@ const main = async () => {
 
 	const bundleLibCtx = await esbuild.context({
 		entryPoints: ["src/lib/index.ts"],
-		external: ["/node_modules/*"],
 		bundle: true,
 		allowOverwrite: true,
 		platform: "node",
 		target: "node16",
 		format: "esm",
+		packages: "external",
 		outfile: "dist/lib.js",
 
 		plugins: [

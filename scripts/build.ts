@@ -22,12 +22,12 @@ const main = async () => {
 	try {
 		await esbuild.build({
 			entryPoints: ["src/cli/index.ts"],
-			external: ["/node_modules/*"],
 			bundle: true,
 			allowOverwrite: true,
 			platform: "node",
 			target: "node16",
 			format: "esm",
+			packages: "external",
 			outfile: "dist/cli.js",
 			banner: { js: "#!/usr/bin/env node" },
 		});
@@ -40,12 +40,12 @@ const main = async () => {
 	try {
 		await esbuild.build({
 			entryPoints: ["src/lib/index.ts"],
-			external: ["/node_modules/*"],
 			bundle: true,
 			allowOverwrite: true,
 			platform: "node",
 			target: "node16",
 			format: "esm",
+			packages: "external",
 			outfile: "dist/lib.js",
 		});
 		console.log(chalk.green("Bundled Lib"));
