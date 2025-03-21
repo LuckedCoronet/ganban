@@ -1,0 +1,8 @@
+.exe/
+.vscode/
+scripts/
+src/
+.editorconfig
+.prettierrc
+Session.vim
+tsconfig.json
