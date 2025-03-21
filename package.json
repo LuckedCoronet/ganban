@@ -1,6 +1,6 @@
 {
 	"name": "ganban",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "A Minecraft Bedrock Addon Compiler that does little more than copy folders",
 	"author": "Lucked Coronet",
 	"license": "MIT",
