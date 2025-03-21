@@ -6,9 +6,11 @@
 
 </div>
 
-## Introduction
-
-TODO: Write introduction
+> [!IMPORTANT]
+> This package is currently being tested inside [SCP: Dystopia addon](https://github.com/lc-studios-mc/scp-dystopia) (my addon btw)
+> to find bugs and potential edge cases. *But most importantly I wanted to get back to addon development sooner.*
+>
+> So, it's not ready for public.
 
 ## License
 
