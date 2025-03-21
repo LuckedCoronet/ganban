@@ -73,7 +73,7 @@ const promptForCompiledPackNames = async (
 const promptForTsconfig = async (skip = false): Promise<boolean> => {
 	if (skip) return true;
 	return await prompts.confirm({
-		message: "Select the type of JS/TS config file",
+		message: "Create tsconfig.json?",
 		default: true,
 	});
 };
