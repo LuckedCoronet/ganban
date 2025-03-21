@@ -2,10 +2,21 @@ import { Command } from "commander";
 import chalk from "chalk";
 import { compilePack } from "@shared/compiler";
 import { createCompilePackOptsFromConfig, isConfigValid, searchConfig } from "@shared/config";
+import { initProject } from "./initProject";
 
 const program = new Command("program");
 
 program.description("A Minecraft Bedrock Addon Compiler that does little more than copy folders");
+
+program
+	.command("init")
+	.description("Initialize a project in current working directory")
+	.option("-y, --yes", "Skip prompts")
+	.action(async (opts) => {
+		await initProject({
+			skipPrompts: opts.yes,
+		});
+	});
 
 program
 	.option("-c, --config <path>", "path to ganban configuration file")
@@ -20,13 +31,8 @@ program
 	.option("-i, --ignore <regex>", "regex pattern to exclude from compilation", (v) => RegExp(v))
 	.option("-s, --sourcemap", "generate sourcemap for debugging scripts")
 	.option("-m, --minify", "minify/optimize files where possible")
-	.option("-w, --watch", "watch for file changes and automatically update the build on the fly");
-
-program
-	.parseAsync(process.argv)
-	.then(async (cmd) => {
-		const opts = cmd.opts();
-
+	.option("-w, --watch", "watch for file changes and automatically update the build on the fly")
+	.action(async (opts) => {
 		const configSearchResult = await searchConfig(opts.config);
 		delete opts.config;
 
@@ -52,5 +58,6 @@ program
 				}
 			});
 		}
-	})
-	.catch((error) => console.error(chalk.red(error)));
+	});
+
+program.parseAsync(process.argv).catch((error) => console.error(chalk.red(error)));
