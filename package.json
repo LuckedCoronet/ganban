@@ -18,6 +18,12 @@
 		"build": "tsc --noEmit && tsx scripts/build.ts",
 		"build:watch": "tsx scripts/build-watch.ts"
 	},
+	"type": "module",
+	"main": "dist/lib.js",
+	"types": "dist/lib.d.ts",
+	"bin": {
+		"ganban": "dist/cli.js"
+	},
 	"os": [
 		"win32"
 	],
