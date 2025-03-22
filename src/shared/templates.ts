@@ -139,6 +139,7 @@ export const createVscodeLaunchJsonTemplate = (
       "name": "Debug with Minecraft",
       "mode": "listen",
 
+      "localRoot": "\${workspaceFolder}/src/bp/",
       "sourceMapRoot": "\${userHome}/AppData/Local/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/development_behavior_packs/${targetBpDirName}/scripts/",
       "generatedSourceRoot": "\${userHome}/AppData/Local/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/development_behavior_packs/${targetBpDirName}/scripts/",
       "port": 19144,
@@ -152,6 +153,7 @@ export const createVscodeLaunchJsonTemplate = (
       "name": "Debug with Minecraft Preview",
       "mode": "listen",
 
+      "localRoot": "\${workspaceFolder}/src/bp/",
       "sourceMapRoot": "\${userHome}/AppData/Local/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang/development_behavior_packs/${targetBpDirName}/scripts/",
       "generatedSourceRoot": "\${userHome}/AppData/Local/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang/development_behavior_packs/${targetBpDirName}/scripts/",
       "port": 19144,
