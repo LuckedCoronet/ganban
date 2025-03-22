@@ -1,4 +1,5 @@
 import * as node_path from "node:path";
+import * as node_url from "node:url";
 import { pipeline } from "node:stream/promises";
 import chalk from "chalk";
 import fs from "fs-extra";
@@ -210,6 +211,9 @@ const compilePackInternal = async (opts: CompilePackOpts): Promise<void> => {
 	let esbuildCtx: esbuild.BuildContext | undefined = undefined;
 	if (typeof scriptEntryFile === "string") {
 		const targetScriptsDir = node_path.join(targetDir, "scripts");
+		const srcScriptsDir = node_path.dirname(scriptEntryFile);
+		const outfile = node_path.join(targetScriptsDir, `${node_path.parse(scriptEntryFile).name}.js`);
+
 		await fs.ensureDir(targetScriptsDir);
 
 		const esbuildOpts: esbuild.BuildOptions = {
@@ -221,28 +225,50 @@ const compilePackInternal = async (opts: CompilePackOpts): Promise<void> => {
 			format: "esm",
 			target: ["es2023"],
 			charset: "utf8",
-			outfile: node_path.join(targetScriptsDir, `${node_path.parse(scriptEntryFile).name}.js`),
+			write: false, // For custom write plugin below
+			outfile,
 			allowOverwrite: true,
 			tsconfig: opts.tsconfig,
 			sourcemap: opts.sourcemap ? "linked" : undefined,
-			sourceRoot: opts.sourcemap ? srcDir : undefined,
+			sourceRoot: opts.sourcemap ? srcScriptsDir : undefined,
+			plugins: [],
 		};
 
+		const customWritePlugin: esbuild.Plugin = {
+			name: "custom-write",
+			setup(build) {
+				build.onEnd((result) => {
+					if (result.outputFiles === undefined) return;
+					for (const outputFile of result.outputFiles) {
+						if (!outputFile.path.endsWith(".map")) {
+							fs.writeFileSync(outputFile.path, outputFile.contents);
+							continue;
+						}
+
+						const srcScriptsDirUrl = `${node_url.pathToFileURL(srcScriptsDir).toString()}/`;
+						const modified = outputFile.text.replaceAll(srcScriptsDirUrl, "");
+
+						fs.writeFileSync(outputFile.path, modified);
+					}
+				});
+			},
+		};
+
+		esbuildOpts.plugins!.push(customWritePlugin);
+
 		if (opts.watch) {
-			esbuildOpts.plugins = [
-				{
-					name: "rebuild-notify",
-					setup(build) {
-						build.onEnd((result) => {
-							if (result.errors.length > 0) {
-								console.error(getPrefixedLogMsg("Failed to bundle scripts", true));
-							} else {
-								console.log(getPrefixedLogMsg("Bundled scripts", true));
-							}
-						});
-					},
+			esbuildOpts.plugins!.push({
+				name: "rebuild-notify",
+				setup(build) {
+					build.onEnd((result) => {
+						if (result.errors.length > 0) {
+							console.error(getPrefixedLogMsg("Failed to bundle scripts", true));
+						} else {
+							console.log(getPrefixedLogMsg("Bundled scripts", true));
+						}
+					});
 				},
-			];
+			});
 
 			esbuildCtx = await esbuild.context(esbuildOpts);
 		} else {
