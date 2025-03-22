@@ -341,7 +341,7 @@ const compilePackInternal = async (opts: CompilePackOpts): Promise<void> => {
 	});
 
 	if (esbuildCtx) {
-		await esbuildCtx.rebuild();
+		await esbuildCtx.watch();
 	}
 
 	let finish = false;
