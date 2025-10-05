@@ -1,5 +1,26 @@
 import type * as esbuild from "esbuild";
 
+export type BuildConfig = {
+	behaviorPack?: BehaviorPackConfig;
+	resourcePack?: ResourcePackConfig;
+	createArchive?: BuildArchiveConfig;
+	watch?: boolean;
+};
+
+export type PackConfig = BehaviorPackConfig | ResourcePackConfig;
+
+export type CommonPackConfig = {
+	srcDir: string;
+	outDir: string;
+	manifest?: Record<string, unknown>;
+	include?: string[];
+	exclude?: string[];
+};
+
+export type BehaviorPackConfig = CommonPackConfig & {
+	scripts?: BehaviorPackScriptConfig;
+};
+
 export type BehaviorPackScriptConfig = {
 	entry: string;
 	bundle?: boolean;
@@ -8,27 +29,11 @@ export type BehaviorPackScriptConfig = {
 	esbuildOptions?: esbuild.CommonOptions;
 };
 
-export type BehaviorPackConfig = CommonPackConfig & {
-	type: "behaviorPack";
-	scripts?: BehaviorPackConfig;
-};
-
 export type ResourcePackConfig = CommonPackConfig & {
-	type: "resourcePack";
 	generateTextureList?: boolean;
 };
 
-export type CommonPackConfig = {
-	srcDir: string;
-	outDir: string;
-	manifest?: Record<string, unknown>;
-	include?: string[];
-	exclude?: string[];
-	watch?: boolean;
-};
-
-export type PackConfig = BehaviorPackConfig | ResourcePackConfig;
-
-export type BuildConfig = {
-	packs?: PackConfig[];
+export type BuildArchiveConfig = {
+	outFile: string;
+	compressionLevel: number;
 };
