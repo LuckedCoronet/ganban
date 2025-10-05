@@ -7,9 +7,6 @@
 	"files": [
 		"dist"
 	],
-	"bin": {
-		"ganban": "./dist/cli.js"
-	},
 	"exports": {
 		".": "./dist/index.js"
 	},
