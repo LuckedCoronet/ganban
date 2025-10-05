@@ -1,6 +1,5 @@
 import { styleText } from "node:util";
-
-export type LogLevel = "debug" | "info" | "warn" | "error" | "silent";
+import type { LogLevel } from "../types";
 
 export type LoggerOptions = {
 	/** The minimum level of messages to log. Defaults to "info". */
