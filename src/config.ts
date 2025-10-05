@@ -26,6 +26,7 @@ export type BehaviorPackScriptConfig = {
 	bundle?: boolean;
 	minify?: boolean;
 	sourceMap?: boolean;
+	tsconfig?: string;
 	esbuildOptions?: esbuild.CommonOptions;
 };
 
