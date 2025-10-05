@@ -15,6 +15,7 @@
 		"test:watch": "vitest",
 		"build": "tsup",
 		"build:watch": "tsup --watch",
+		"clean": "shx rm -rf dist",
 		"lint": "tsc",
 		"format": "prettier --write ."
 	},
