@@ -1,10 +1,12 @@
 import type * as esbuild from "esbuild";
+import type { LogLevel } from "./types";
 
 export type BuildConfig = {
 	behaviorPack?: BehaviorPackConfig;
 	resourcePack?: ResourcePackConfig;
 	createArchive?: BuildArchiveConfig;
 	watch?: boolean;
+	logLevel?: LogLevel;
 };
 
 export type PackConfig = BehaviorPackConfig | ResourcePackConfig;
