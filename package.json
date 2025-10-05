@@ -31,7 +31,10 @@
 		"vitest": "^3.2.4"
 	},
 	"dependencies": {
-		"fs-extra": "^11.3.2"
+		"chokidar": "^4.0.3",
+		"esbuild": "^0.25.10",
+		"fs-extra": "^11.3.2",
+		"json5": "^2.2.3"
 	},
 	"engines": {
 		"node": ">= 22"
