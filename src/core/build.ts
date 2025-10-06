@@ -67,12 +67,13 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 	});
 
 	if (!config.behaviorPack && !config.resourcePack) {
-		log.warn("Neither behaviorPack nor resourcePack is configured.");
-		return;
+		throw new Error("Neither behaviorPack nor resourcePack is configured.");
 	}
 
 	const callBuildPacks = async (): Promise<BuildPacksResult> => {
-		log.debug("Building pack(s)...");
+		log.info("Build started");
+
+		const startTime = performance.now();
 
 		const result = await buildPacks({
 			config,
@@ -81,7 +82,18 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 			signal,
 		});
 
-		log.debug("Finished building pack(s)");
+		const endTime = performance.now();
+		const totalTimeStr = (endTime - startTime).toFixed(2);
+
+		log.info(`Build finished in ${totalTimeStr}ms`);
+
+		if (result.behaviorPack?.status === "rejected") {
+			log.warn(`There was an error building behaviorPack: ${result.behaviorPack.reason}`);
+		}
+
+		if (result.resourcePack?.status === "rejected") {
+			log.warn(`There was an error building resourcePack: ${result.resourcePack.reason}`);
+		}
 
 		return result;
 	};
