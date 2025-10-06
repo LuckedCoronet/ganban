@@ -1,56 +1,90 @@
-import { buildPack, type PackBuildResult } from "./build-pack";
+import type { LogLevel } from "@/types";
+import { createLogger, type Logger } from "@/utils/logger";
+import { buildIndividualPack, type IndividualPackBuildResult } from "./build-pack";
 import type { BuildConfig } from "./config";
-import { createLogger } from "@/utils/logger";
+
+type BuildPacksContext = {
+	config: BuildConfig;
+	log: Logger;
+	minLogLevel?: LogLevel;
+	signal?: AbortSignal;
+};
+
+type BuildPacksResult = {
+	behaviorPack?: PromiseSettledResult<IndividualPackBuildResult>;
+	resourcePack?: PromiseSettledResult<IndividualPackBuildResult>;
+};
+
+const buildPacks = async (ctx: BuildPacksContext): Promise<BuildPacksResult> => {
+	const { config, log, minLogLevel, signal } = ctx;
+
+	signal?.throwIfAborted();
+
+	let behaviorPackBuildPromise: Promise<IndividualPackBuildResult> | undefined = undefined;
+	let resourcePackBuildPromise: Promise<IndividualPackBuildResult> | undefined = undefined;
+
+	if (config.behaviorPack) {
+		log.debug("Building behaviorPack...");
+
+		behaviorPackBuildPromise = buildIndividualPack({
+			packConfig: config.behaviorPack,
+			log: createLogger({
+				minLevel: minLogLevel,
+				prefix: "behaviorPack",
+			}),
+			signal,
+		});
+	}
+
+	if (config.resourcePack) {
+		log.debug("Building resourcePack...");
+
+		resourcePackBuildPromise = buildIndividualPack({
+			packConfig: config.resourcePack,
+			log: createLogger({
+				minLevel: minLogLevel,
+				prefix: "resourcePack",
+			}),
+			signal,
+		});
+	}
+
+	const results = await Promise.allSettled([behaviorPackBuildPromise, resourcePackBuildPromise]);
+
+	return {
+		behaviorPack: results[0],
+		resourcePack: results[1],
+	};
+};
 
 export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<void> => {
 	signal?.throwIfAborted();
 
 	const minLogLevel = config.logLevel;
 
-	const globalLogger = createLogger({
+	const log = createLogger({
 		minLevel: minLogLevel,
 	});
 
 	if (!config.behaviorPack && !config.resourcePack) {
-		globalLogger.warn("Neither behaviorPack nor resourcePack is configured.");
+		log.warn("Neither behaviorPack nor resourcePack is configured.");
 		return;
 	}
 
-	const packBuildPromises: Promise<PackBuildResult>[] = [];
+	const callBuildPacks = async (): Promise<BuildPacksResult> => {
+		log.debug("Building pack(s)...");
 
-	if (config.behaviorPack) {
-		packBuildPromises.push(
-			buildPack({
-				buildConfig: config,
-				packConfig: config.behaviorPack,
-				log: createLogger({
-					minLevel: minLogLevel,
-					prefix: "behaviorPack",
-				}),
-				signal,
-			}),
-		);
+		const result = await buildPacks({
+			config,
+			log,
+			minLogLevel,
+			signal,
+		});
 
-		globalLogger.debug("Added behavior pack build promise into the array");
-	}
+		log.debug("Finished building pack(s)");
 
-	if (config.resourcePack) {
-		packBuildPromises.push(
-			buildPack({
-				buildConfig: config,
-				packConfig: config.resourcePack,
-				log: createLogger({
-					minLevel: minLogLevel,
-					prefix: "resourcePack",
-				}),
-				signal,
-			}),
-		);
+		return result;
+	};
 
-		globalLogger.debug("Added resource pack build promise into the array");
-	}
-
-	const settledResults = await Promise.allSettled(packBuildPromises);
-
-	globalLogger.debug(`All ${packBuildPromises.length} pack build promise(s) has settled`);
+	await callBuildPacks();
 };
