@@ -1,20 +1,6 @@
-import type { BuildConfig, PackConfig } from "./config";
-import { createLogger, type Logger } from "./utils/logger";
-
-type PackBuildContext = {
-	buildConfig: BuildConfig;
-	packConfig: PackConfig;
-	log: Logger;
-	signal?: AbortSignal;
-};
-
-type PackBuildResult = void;
-
-const buildPack = async (ctx: PackBuildContext): Promise<PackBuildResult> => {
-	const { buildConfig, packConfig, log, signal } = ctx;
-
-	signal?.throwIfAborted();
-};
+import { buildPack, type PackBuildResult } from "./build-pack";
+import type { BuildConfig } from "./config";
+import { createLogger } from "./utils/logger";
 
 export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<void> => {
 	signal?.throwIfAborted();
