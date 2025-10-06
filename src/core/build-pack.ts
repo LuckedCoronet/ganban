@@ -1,5 +1,5 @@
+import type { Logger } from "@/utils/logger";
 import type { BuildConfig, PackConfig } from "./config";
-import type { Logger } from "./utils/logger";
 
 export type PackBuildContext = {
 	buildConfig: BuildConfig;

@@ -1,2 +1,2 @@
-export * from "./config";
-export { build } from "./build";
+export { build } from "./core/build";
+export * from "./core/config";

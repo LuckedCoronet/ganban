@@ -1,6 +1,6 @@
 import { buildPack, type PackBuildResult } from "./build-pack";
 import type { BuildConfig } from "./config";
-import { createLogger } from "./utils/logger";
+import { createLogger } from "@/utils/logger";
 
 export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<void> => {
 	signal?.throwIfAborted();
