@@ -1,5 +1,5 @@
 import { createLogger, type Logger } from "@/utils/logger";
-import { compilePack, type CompilePackResult } from "./build-pack";
+import { compilePack, type CompilePackResult } from "./compile-pack";
 import type { BuildConfig } from "./config";
 
 type CompileOptions = {
