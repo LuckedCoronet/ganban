@@ -10,6 +10,7 @@ export type PackCache = {
 export type CompilePackOptions = {
 	packConfig: PackConfig;
 	log: Logger;
+	cache: PackCache;
 	signal?: AbortSignal;
 };
 
