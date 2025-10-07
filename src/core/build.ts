@@ -2,7 +2,7 @@ import { createLogger, type Logger } from "@/utils/logger";
 import { compilePack, type CompilePackResult, type PackCache } from "./compile-pack";
 import type { BuildConfig } from "./config";
 
-type CompileOptions = {
+type CompileContext = {
 	config: BuildConfig;
 	log: Logger;
 	behaviorPackCache: PackCache;
@@ -15,8 +15,8 @@ type CompileResult = {
 	resourcePack?: PromiseSettledResult<CompilePackResult>;
 };
 
-const compilePacks = async (options: CompileOptions): Promise<CompileResult> => {
-	const { config, log, behaviorPackCache, resourcePackCache, signal } = options;
+const compilePacks = async (ctx: CompileContext): Promise<CompileResult> => {
+	const { config, behaviorPackCache, resourcePackCache, signal } = ctx;
 
 	signal?.throwIfAborted();
 
@@ -24,8 +24,6 @@ const compilePacks = async (options: CompileOptions): Promise<CompileResult> => 
 	let resourcePackBuildPromise: Promise<CompilePackResult> | undefined = undefined;
 
 	if (config.behaviorPack) {
-		log.debug("Compiling behaviorPack...");
-
 		behaviorPackBuildPromise = compilePack({
 			packConfig: config.behaviorPack,
 			log: createLogger({
@@ -38,8 +36,6 @@ const compilePacks = async (options: CompileOptions): Promise<CompileResult> => 
 	}
 
 	if (config.resourcePack) {
-		log.debug("Compiling resourcePack...");
-
 		resourcePackBuildPromise = compilePack({
 			packConfig: config.resourcePack,
 			log: createLogger({
@@ -75,33 +71,39 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 	const behaviorPackCache: PackCache = {};
 	const resourcePackCache: PackCache = {};
 
-	const runBuild = async (): Promise<CompileResult> => {
-		log.info("Build started");
+	const runBuild = async (): Promise<void> => {
+		try {
+			log.info("Build started");
 
-		const startTime = performance.now();
+			const startTime = performance.now();
 
-		const result = await compilePacks({
-			config,
-			log,
-			behaviorPackCache,
-			resourcePackCache,
-			signal,
-		});
+			const result = await compilePacks({
+				config,
+				log,
+				behaviorPackCache,
+				resourcePackCache,
+				signal,
+			});
 
-		const endTime = performance.now();
-		const totalTimeStr = (endTime - startTime).toFixed(2);
+			const endTime = performance.now();
+			const totalTimeStr = (endTime - startTime).toFixed(2);
 
-		log.info(`Build finished in ${totalTimeStr}ms`);
+			log.info(`Build finished in ${totalTimeStr}ms`);
 
-		if (result.behaviorPack?.status === "rejected") {
-			log.error(`There was an error compiling behaviorPack: ${result.behaviorPack.reason}`);
+			if (result.behaviorPack?.status === "rejected") {
+				log.error(`There was an error compiling behaviorPack: ${result.behaviorPack.reason}`);
+			}
+
+			if (result.resourcePack?.status === "rejected") {
+				log.error(`There was an error compiling resourcePack: ${result.resourcePack.reason}`);
+			}
+		} catch (error) {
+			if (error instanceof Error && error.name === "AbortError") {
+				log.warn("Build aborted");
+			} else {
+				throw error;
+			}
 		}
-
-		if (result.resourcePack?.status === "rejected") {
-			log.error(`There was an error compiling resourcePack: ${result.resourcePack.reason}`);
-		}
-
-		return result;
 	};
 
 	await runBuild();

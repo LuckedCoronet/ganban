@@ -7,7 +7,7 @@ export type PackCache = {
 	};
 };
 
-export type CompilePackOptions = {
+export type CompilePackContext = {
 	packConfig: PackConfig;
 	log: Logger;
 	cache: PackCache;
@@ -16,8 +16,10 @@ export type CompilePackOptions = {
 
 export type CompilePackResult = void;
 
-export const compilePack = async (options: CompilePackOptions): Promise<CompilePackResult> => {
-	const { packConfig, log, signal } = options;
+export const compilePack = async (ctx: CompilePackContext): Promise<CompilePackResult> => {
+	const { packConfig, log, signal } = ctx;
 
 	signal?.throwIfAborted();
+
+	log.info("Compiling...");
 };
