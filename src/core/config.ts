@@ -38,5 +38,4 @@ export type ResourcePackConfig = CommonPackConfig & {
 
 export type BuildArchiveConfig = {
 	outFile: string;
-	compressionLevel: number;
 };
