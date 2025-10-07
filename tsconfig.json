@@ -19,5 +19,5 @@
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true
 	},
-	"exclude": ["node_modules", "dist"]
+	"exclude": [".private", "node_modules", "dist"]
 }
