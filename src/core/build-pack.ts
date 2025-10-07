@@ -1,18 +1,22 @@
 import type { Logger } from "@/utils/logger";
 import type { PackConfig } from "./config";
 
-export type IndividualPackBuildContext = {
+export type PackCache = {
+	[file: string]: {
+		timestamp: number;
+	};
+};
+
+export type CompilePackOptions = {
 	packConfig: PackConfig;
 	log: Logger;
 	signal?: AbortSignal;
 };
 
-export type IndividualPackBuildResult = void;
+export type CompilePackResult = void;
 
-export const buildIndividualPack = async (
-	ctx: IndividualPackBuildContext,
-): Promise<IndividualPackBuildResult> => {
-	const { packConfig, log, signal } = ctx;
+export const compilePack = async (options: CompilePackOptions): Promise<CompilePackResult> => {
+	const { packConfig, log, signal } = options;
 
 	signal?.throwIfAborted();
 };

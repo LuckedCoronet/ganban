@@ -1,35 +1,33 @@
-import type { LogLevel } from "@/types";
 import { createLogger, type Logger } from "@/utils/logger";
-import { buildIndividualPack, type IndividualPackBuildResult } from "./build-pack";
+import { compilePack, type CompilePackResult } from "./build-pack";
 import type { BuildConfig } from "./config";
 
-type BuildPacksContext = {
+type CompileOptions = {
 	config: BuildConfig;
 	log: Logger;
-	minLogLevel?: LogLevel;
 	signal?: AbortSignal;
 };
 
-type BuildPacksResult = {
-	behaviorPack?: PromiseSettledResult<IndividualPackBuildResult>;
-	resourcePack?: PromiseSettledResult<IndividualPackBuildResult>;
+type CompileResult = {
+	behaviorPack?: PromiseSettledResult<CompilePackResult>;
+	resourcePack?: PromiseSettledResult<CompilePackResult>;
 };
 
-const buildPacks = async (ctx: BuildPacksContext): Promise<BuildPacksResult> => {
-	const { config, log, minLogLevel, signal } = ctx;
+const compile = async (options: CompileOptions): Promise<CompileResult> => {
+	const { config, log, signal } = options;
 
 	signal?.throwIfAborted();
 
-	let behaviorPackBuildPromise: Promise<IndividualPackBuildResult> | undefined = undefined;
-	let resourcePackBuildPromise: Promise<IndividualPackBuildResult> | undefined = undefined;
+	let behaviorPackBuildPromise: Promise<CompilePackResult> | undefined = undefined;
+	let resourcePackBuildPromise: Promise<CompilePackResult> | undefined = undefined;
 
 	if (config.behaviorPack) {
-		log.debug("Building behaviorPack...");
+		log.debug("Compiling behaviorPack...");
 
-		behaviorPackBuildPromise = buildIndividualPack({
+		behaviorPackBuildPromise = compilePack({
 			packConfig: config.behaviorPack,
 			log: createLogger({
-				minLevel: minLogLevel,
+				minLevel: config.logLevel,
 				prefix: "behaviorPack",
 			}),
 			signal,
@@ -37,12 +35,12 @@ const buildPacks = async (ctx: BuildPacksContext): Promise<BuildPacksResult> => 
 	}
 
 	if (config.resourcePack) {
-		log.debug("Building resourcePack...");
+		log.debug("Compiling resourcePack...");
 
-		resourcePackBuildPromise = buildIndividualPack({
+		resourcePackBuildPromise = compilePack({
 			packConfig: config.resourcePack,
 			log: createLogger({
-				minLevel: minLogLevel,
+				minLevel: config.logLevel,
 				prefix: "resourcePack",
 			}),
 			signal,
@@ -70,17 +68,12 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 		throw new Error("Neither behaviorPack nor resourcePack is configured.");
 	}
 
-	const callBuildPacks = async (): Promise<BuildPacksResult> => {
+	const callBuildPacks = async (): Promise<CompileResult> => {
 		log.info("Build started");
 
 		const startTime = performance.now();
 
-		const result = await buildPacks({
-			config,
-			log,
-			minLogLevel,
-			signal,
-		});
+		const result = await compile({ config, log, signal });
 
 		const endTime = performance.now();
 		const totalTimeStr = (endTime - startTime).toFixed(2);
@@ -88,11 +81,11 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 		log.info(`Build finished in ${totalTimeStr}ms`);
 
 		if (result.behaviorPack?.status === "rejected") {
-			log.warn(`There was an error building behaviorPack: ${result.behaviorPack.reason}`);
+			log.error(`There was an error building behaviorPack: ${result.behaviorPack.reason}`);
 		}
 
 		if (result.resourcePack?.status === "rejected") {
-			log.warn(`There was an error building resourcePack: ${result.resourcePack.reason}`);
+			log.error(`There was an error building resourcePack: ${result.resourcePack.reason}`);
 		}
 
 		return result;
