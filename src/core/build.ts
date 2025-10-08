@@ -7,16 +7,17 @@ type CompileContext = {
 	log: Logger;
 	behaviorPackCache: PackCache;
 	resourcePackCache: PackCache;
+	isInitialCompile: boolean;
 	signal?: AbortSignal;
 };
 
 type CompileResult = {
-	behaviorPack?: PromiseSettledResult<CompilePackResult>;
-	resourcePack?: PromiseSettledResult<CompilePackResult>;
+	behaviorPack?: PromiseSettledResult<CompilePackResult | undefined>;
+	resourcePack?: PromiseSettledResult<CompilePackResult | undefined>;
 };
 
 const compilePacks = async (ctx: CompileContext): Promise<CompileResult> => {
-	const { config, behaviorPackCache, resourcePackCache, signal } = ctx;
+	const { config, behaviorPackCache, resourcePackCache, isInitialCompile, signal } = ctx;
 
 	signal?.throwIfAborted();
 
@@ -31,6 +32,7 @@ const compilePacks = async (ctx: CompileContext): Promise<CompileResult> => {
 				prefix: "behaviorPack",
 			}),
 			cache: behaviorPackCache,
+			isInitialCompile,
 			signal,
 		});
 	}
@@ -43,6 +45,7 @@ const compilePacks = async (ctx: CompileContext): Promise<CompileResult> => {
 				prefix: "resourcePack",
 			}),
 			cache: resourcePackCache,
+			isInitialCompile,
 			signal,
 		});
 	}
@@ -71,7 +74,7 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 	const behaviorPackCache: PackCache = {};
 	const resourcePackCache: PackCache = {};
 
-	const runBuild = async (): Promise<void> => {
+	const runBuild = async (isInitialCompile = true): Promise<void> => {
 		try {
 			log.info("Build started");
 
@@ -82,6 +85,7 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 				log,
 				behaviorPackCache,
 				resourcePackCache,
+				isInitialCompile,
 				signal,
 			});
 
