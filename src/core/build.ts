@@ -1,6 +1,8 @@
+import { debounce } from "@/utils/debounce";
 import { createLogger, type Logger } from "@/utils/logger";
 import { compilePack, type CompilePackResult, type PackCache } from "./compile-pack";
 import type { BuildConfig } from "./config";
+import { watchPack } from "./pack-watcher";
 
 type CompileContext = {
 	config: BuildConfig;
@@ -76,6 +78,8 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 
 	const runBuild = async (isInitialCompile = true): Promise<void> => {
 		try {
+			signal?.throwIfAborted();
+
 			log.info("Build started");
 
 			const startTime = performance.now();
@@ -111,4 +115,26 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 	};
 
 	await runBuild();
+
+	if (!config.watch) return;
+
+	signal?.throwIfAborted();
+
+	const runBuildDebounced = debounce(
+		async () => {
+			log.info(`File change(s) detected. Recompiling...`);
+			await runBuild();
+		},
+		100,
+		signal,
+	);
+	const onChangeDetected = runBuildDebounced;
+
+	const watchPromises: Promise<void>[] = [];
+	if (config.behaviorPack)
+		watchPromises.push(watchPack({ pack: config.behaviorPack, log, onChangeDetected, signal }));
+	if (config.resourcePack)
+		watchPromises.push(watchPack({ pack: config.resourcePack, log, onChangeDetected, signal }));
+
+	await Promise.all(watchPromises);
 };
