@@ -2,7 +2,31 @@
 	"name": "ganban",
 	"version": "0.0.0",
 	"license": "MIT",
-	"description": "A simple Minecraft Bedrock addon compiler.",
+	"description": "A simple Minecraft Bedrock add-on compiler.",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/LuckedCoronet/ganban.git"
+	},
+	"keywords": [
+		"minecraft",
+		"mcaddon",
+		"mcpack",
+		"addon",
+		"add-on",
+		"pack",
+		"compile",
+		"compiler",
+		"sync",
+		"syncer",
+		"build",
+		"tool",
+		"watch",
+		"json",
+		"jsonc",
+		"json5",
+		"javascript",
+		"typescript"
+	],
 	"type": "module",
 	"files": [
 		"dist"
@@ -13,10 +37,11 @@
 	"scripts": {
 		"test": "vitest run",
 		"test:watch": "vitest",
+		"lint": "tsc",
 		"build": "tsup",
 		"build:watch": "tsup --watch",
+		"prepack": "pnpm run build",
 		"clean": "shx rm -rf dist",
-		"lint": "tsc",
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
