@@ -20,6 +20,7 @@ export type CommonPackConfig = {
 };
 
 export type BehaviorPackConfig = CommonPackConfig & {
+	type: "behavior";
 	scripts?: BehaviorPackScriptConfig;
 };
 
@@ -33,6 +34,7 @@ export type BehaviorPackScriptConfig = {
 };
 
 export type ResourcePackConfig = CommonPackConfig & {
+	type: "resource";
 	generateTextureList?: boolean;
 };
 
