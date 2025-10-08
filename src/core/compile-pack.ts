@@ -165,39 +165,89 @@ const applyFileChange = async (ctx: CompilePackContext, change: FileChange): Pro
 };
 
 const bundleScriptsIfNeeded = async (
-	pack: PackConfig,
-	srcDir: string,
-	outDir: string,
+	ctx: CompilePackContext,
 	shouldBundle: boolean,
-	signal?: AbortSignal,
 ): Promise<void> => {
-	if (!shouldBundle || pack.type !== "behavior" || !pack.scripts) return;
+	const { packConfig, log, signal } = ctx;
+
+	if (!shouldBundle || packConfig.type !== "behavior" || !packConfig.scripts) return;
+
+	log.debug("Script change(s) were detected. Bundling scripts using esbuild...");
+
+	const srcDir = path.resolve(packConfig.srcDir);
+	const outDir = path.resolve(packConfig.outDir);
 	const scriptsOutDir = path.join(outDir, "scripts");
+
 	await fs.rm(scriptsOutDir, { recursive: true, force: true });
-	await bundleScripts(pack.scripts, path.join(srcDir, "scripts"), scriptsOutDir, signal);
+
+	const result = await bundleScripts(
+		packConfig.scripts,
+		path.join(srcDir, "scripts"),
+		scriptsOutDir,
+		signal,
+	);
+
+	log.debug(`Bundled scripts. Errors: ${result.errors}`);
 };
 
 const generateTextureListIfNeeded = async (
-	pack: PackConfig,
-	outDir: string,
-	textureChangesDetected: boolean,
+	ctx: CompilePackContext,
+	shouldGenerateTextureList: boolean,
 ): Promise<void> => {
-	if (!textureChangesDetected || pack.type !== "resource" || !pack.generateTextureList) return;
+	const { packConfig, log } = ctx;
+
+	if (
+		!shouldGenerateTextureList ||
+		packConfig.type !== "resource" ||
+		!packConfig.generateTextureList
+	)
+		return;
+
+	log.debug("Texture change(s) were detected. Generating texture list...");
+
+	const srcDir = path.resolve(packConfig.srcDir);
+	const outDir = path.resolve(packConfig.outDir);
+
+	if (await fs.pathExists(path.join(srcDir, TEXTURE_LIST_PATH))) {
+		log.warn(
+			"Texture list file generation is enabled but the file already exists in source directory. It will be overwritten.",
+		);
+	}
 
 	const textureDir = path.join(outDir, TEXTURES_DIR_PREFIX);
-	const textureFiles = await glob("**/*.png", { cwd: textureDir });
-	const textureList = textureFiles.map(
+	const textureFiles: string[] = await glob("**/*.png", { cwd: textureDir });
+	const textureList: string[] = textureFiles.map(
 		(file) => `${TEXTURES_DIR_PREFIX}${file.replaceAll("\\", "/").replace(/\.[^/.]+$/, "")}`,
 	);
 	const json = JSON.stringify(textureList, null, 2);
 
 	await fs.outputFile(path.join(outDir, TEXTURE_LIST_PATH), json, "utf8");
+
+	log.debug(
+		`Generated texture list. ${textureList.length} elements currently exist in the texture list.`,
+	);
 };
 
-const writeManifestFileIfNeeded = async (pack: PackConfig): Promise<void> => {
-	const filePath = path.resolve(path.join(pack.outDir, "manifest.json"));
-	const json = JSON.stringify(pack.manifest, null, 2);
+const writeManifestFileIfNeeded = async (ctx: CompilePackContext): Promise<void> => {
+	const { packConfig, log } = ctx;
+
+	if (!packConfig.manifest) return;
+
+	const srcDir = path.resolve(packConfig.srcDir);
+	const outDir = path.resolve(packConfig.outDir);
+
+	if (await fs.pathExists(path.join(srcDir, "manifest.json"))) {
+		log.warn(
+			"Pack manifest object is defined in config but a raw manifest.json exists in source directory. It will be overwritten.",
+		);
+	}
+
+	const filePath = path.resolve(path.join(outDir, "manifest.json"));
+	const json = JSON.stringify(packConfig.manifest, null, 2);
+
 	await fs.outputFile(filePath, json, "utf8");
+
+	log.debug("Written manifest.");
 };
 
 export const compilePack = async (ctx: CompilePackContext): Promise<CompilePackResult> => {
@@ -207,16 +257,22 @@ export const compilePack = async (ctx: CompilePackContext): Promise<CompilePackR
 
 	signal?.throwIfAborted();
 
+	if (ctx.isInitialCompile && (await fs.pathExists(outDir))) {
+		await fs.rm(outDir, { recursive: true });
+		log.info("Removed existing build");
+	}
+
 	log.info("Compiling...");
 
 	const { changes, newCache } = await detectFileChanges(ctx);
+
 	if (changes.length === 0) {
 		log.info("No changes were detected");
 		return { newCache };
 	}
 
 	let shouldBundleScripts = false;
-	let textureChangesDetected = false;
+	let shouldGenerateTextureList = false;
 
 	const fileProcessingPromises: Promise<void>[] = [];
 
@@ -234,7 +290,7 @@ export const compilePack = async (ctx: CompilePackContext): Promise<CompilePackR
 		}
 
 		if (relativePath.startsWith(TEXTURES_DIR_PREFIX) && path.extname(change.filePath) === ".png") {
-			textureChangesDetected = true;
+			shouldGenerateTextureList = true;
 		}
 
 		fileProcessingPromises.push(applyFileChange(ctx, change));
@@ -243,10 +299,12 @@ export const compilePack = async (ctx: CompilePackContext): Promise<CompilePackR
 	await Promise.all(fileProcessingPromises);
 
 	await Promise.all([
-		bundleScriptsIfNeeded(packConfig, srcDir, outDir, shouldBundleScripts, signal),
-		generateTextureListIfNeeded(packConfig, outDir, textureChangesDetected),
-		writeManifestFileIfNeeded(packConfig),
+		bundleScriptsIfNeeded(ctx, shouldBundleScripts),
+		generateTextureListIfNeeded(ctx, shouldGenerateTextureList),
+		writeManifestFileIfNeeded(ctx),
 	]);
+
+	log.info("Compiled!");
 
 	return { newCache };
 };
