@@ -187,7 +187,7 @@ const bundleScriptsIfNeeded = async (
 		signal,
 	);
 
-	log.debug(`Bundled scripts. Errors: ${result.errors}`);
+	log.debug(`Bundled scripts.`);
 };
 
 const generateTextureListIfNeeded = async (
@@ -224,7 +224,7 @@ const generateTextureListIfNeeded = async (
 	await fs.outputFile(path.join(outDir, TEXTURE_LIST_PATH), json, "utf8");
 
 	log.debug(
-		`Generated texture list. ${textureList.length} elements currently exist in the texture list.`,
+		`Generated texture list. ${textureList.length} element(s) currently exist in the texture list.`,
 	);
 };
 
@@ -265,6 +265,8 @@ export const compilePack = async (ctx: CompilePackContext): Promise<CompilePackR
 	log.info("Compiling...");
 
 	const { changes, newCache } = await detectFileChanges(ctx);
+
+	log.debug(`Detected ${changes.length} changes (are additions at initial compile)`);
 
 	if (changes.length === 0) {
 		log.info("No changes were detected");

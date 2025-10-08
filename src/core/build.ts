@@ -136,5 +136,7 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 	if (config.resourcePack)
 		watchPromises.push(watchPack({ pack: config.resourcePack, log, onChangeDetected, signal }));
 
+	log.debug(`Waiting for ${watchPromises.length} watchers to be closed/aborted...`);
+
 	await Promise.all(watchPromises);
 };
