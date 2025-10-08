@@ -43,7 +43,7 @@ Make sure you have these tools installed on your system.
 
 Make sure you read the [prerequisites](#prerequisites).
 
-1. Create a folder somewhere, which will your project folder.
+1. Create a folder somewhere, which will be your project folder.
 
 2. Open a terminal window in the created folder, and run the following command:
 
