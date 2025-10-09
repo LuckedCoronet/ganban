@@ -2,6 +2,8 @@
 
 ganban allows for smoother Minecraft Bedrock add-on development than the traditional approach where packs are scattered across separate development_behavior_packs and/or development_resource_packs folders.
 
+"ganban" (岩盤) means "bedrock" in Japanese 🪨
+
 ## Introduction
 
 The dispersed locations of packs can require multiple code editor windows to be opened for a single add-on, and implementing a version control system (like Git) can be difficult. :worried:
@@ -51,7 +53,7 @@ Make sure you have these tools installed on your system.
 
 ## Installation
 
-1. Create a folder somewhere, which will be your project folder.
+1. Create a folder somewhere, which will be your project folder. 📂
 
 2. Open a terminal window in the created folder, and run the following command:
 
@@ -265,7 +267,7 @@ and ran `ganban.mjs` using node.
 
 `WATCH=true` means ganban will be watching for file changes (to recompile in real time). You can press Ctrl+c to stop it.
 
-Open Minecraft Bedrock (not Preview) and the compiled packs should be available.
+Open Minecraft Bedrock (not Preview) and the compiled packs should be available. ✔️
 
 Let's create a release build:
 
