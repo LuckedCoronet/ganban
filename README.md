@@ -237,4 +237,42 @@ This one uses environment variables extensively to set values conditionally:
 
 ganban's `getRequiredEnv()` and `getRequiredEnvWithFallback()` are nice helper functions for this case.
 
+Let's set environment variables and run ganban.
+
+First, install the `dotenv-cli` package:
+
+```bash
+npm install --save-dev dotenv-cli
+```
+
+Second, create a file named `.env` at project root, and paste this text (replace `{User}` with your username):
+
+```env
+# Specify pack output locations for dev build
+DEV_BP_OUTDIR="C:\Users\{USER}\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\development_behavior_packs\My_Addon_BP"
+DEV_RP_OUTDIR="C:\Users\{USER}\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\development_resource_packs\My_Addon_RP"
+```
+
+Third, run ganban:
+
+```bash
+npx dotenv -v DEV=true -v WATCH=true -- node ganban.mjs
+```
+
+It loaded environment variables from the `.env` file,
+supplied additional environment variables (`DEV` and `WATCH`),
+and ran `ganban.mjs` using node.
+
+`WATCH=true` means ganban will be watching for file changes (to recompile in real time). You can press Ctrl+c to stop it.
+
+Open Minecraft Bedrock (not Preview) and the compiled packs should be available.
+
+Let's create a release build:
+
+```bash
+npx dotenv -v ADDON_VERSION=0.6.9 -- node ganban.mjs
+```
+
+Release build v0.6.9 should be generated inside the dist/ folder.
+
 </details>
