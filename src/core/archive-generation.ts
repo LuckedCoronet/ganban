@@ -67,7 +67,7 @@ export async function createArchive(
 		// Handle successful completion.
 		output.on("close", () => {
 			logger?.info(
-				`Generated an archive ${path.basename(path.resolve(outputPath))} (${archive.pointer()} total bytes)`,
+				`Generated an archive: ${path.basename(path.resolve(outputPath))} (${archive.pointer()} total bytes)`,
 			);
 			cleanup();
 			resolve();
