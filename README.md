@@ -101,8 +101,140 @@ node ganban.mjs
 </details>
 
 <details>
-  <summary>Example #2 - Ultimate practical approach</summary>
+  <summary>Example #2 - Practical and useful</summary>
 
-TODO
+This one is actually pratical and I've writtem something like this in my own add-ons.
+
+What may seem complicated is just a pack manifest definition.
+(Yes, you can define manfiests flexibly)
+
+```javascript
+import {
+  build,
+  getRequiredEnv,
+  getRequiredEnvWithFallback,
+  getMinecraftPackageVersions,
+  parseVersionString,
+} from "ganban";
+import packageConfig from "./package.json" with { type: "json" };
+
+const isDevBuild = Boolean(getRequiredEnvWithFallback("DEV", ""));
+const addonVersionArray = parseVersionString(getRequiredEnvWithFallback("ADDON_VERSION", "0.0.1"));
+const addonVersionForHumans = "v" + addonVersionArray.join(".");
+
+// Some variables shared between pack manifests
+const minEngineVersion = [1, 21, 111];
+const behaviorPackUuid = "8c28c9a8-c721-4e7f-b8ba-346486003e9d";
+const resourcePackUuid = "fb30e68f-435a-4b5b-b41e-32b4ada45798";
+
+// Used in "dependencies" section of behavior pack manifest
+const minecraftPackageVersions = getMinecraftPackageVersions(packageConfig);
+
+const behaviorPackManifest = {
+  format_version: 2,
+  header: {
+    description: isDevBuild ? "Dev build description." : "Release build description.",
+    name: isDevBuild ? `My Addon BP - DEV` : `My Addon BP - ${addonVersionForHumans}`,
+    uuid: behaviorPackUuid,
+    version: addonVersionArray,
+    min_engine_version: minEngineVersion,
+  },
+  modules: [
+    {
+      type: "data",
+      uuid: "0bdbbaa9-1231-442f-8f4e-7ad379f05a53",
+      version: addonVersionArray,
+    },
+    {
+      language: "javascript",
+      type: "script",
+      uuid: "5c779582-0ed1-4cb2-af47-1b4ff5c87eeb",
+      version: addonVersionArray,
+      entry: "scripts/main.js",
+    },
+  ],
+  dependencies: [
+    {
+      // Resource pack dependency
+      uuid: resourcePackUuid,
+      version: addonVersionArray,
+    },
+    {
+      module_name: "@minecraft/server",
+      version: minecraftPackageVersions["@minecraft/server"],
+    },
+    {
+      module_name: "@minecraft/server-ui",
+      version: minecraftPackageVersions["@minecraft/server-ui"],
+    },
+  ],
+};
+
+const resourcePackManifest = {
+  format_version: 2,
+  header: {
+    description: isDevBuild ? "Dev build description." : "Release build description.",
+    name: isDevBuild ? `My Addon RP - DEV` : `My Addon RP - ${addonVersionForHumans}`,
+    uuid: resourcePackUuid,
+    version: addonVersionArray,
+    min_engine_version: minEngineVersion,
+  },
+  modules: [
+    {
+      type: "resources",
+      uuid: "424680fc-84c5-4d0e-a2f5-e3f49eb94006",
+      version: addonVersionArray,
+    },
+  ],
+};
+
+/** @type {import("ganban").BuildConfig} */
+const buildConfig = {
+  behaviorPack: {
+    type: "behavior",
+    srcDir: "src/bp",
+    outDir: isDevBuild ? getRequiredEnv("DEV_BP_OUTDIR") : `dist/${addonVersionForHumans}/bp`,
+    manifest: behaviorPackManifest,
+    scripts: {
+      entry: "src/bp/scripts/main.js",
+      bundle: true, // Combine multiple scripts into a single file
+      minify: !isDevBuild, // Minimize script file size for release builds
+      sourceMap: isDevBuild, // Source maps are really useful when debugging scripts
+    },
+  },
+  resourcePack: {
+    type: "resource",
+    srcDir: "src/rp",
+    outDir: isDevBuild ? getRequiredEnv("DEV_RP_OUTDIR") : `dist/${addonVersionForHumans}/rp`,
+    manifest: resourcePackManifest,
+    generateTextureList: true,
+  },
+  watch: Boolean(getRequiredEnvWithFallback("WATCH", "")),
+};
+
+// Create archive for release builds
+if (!isDevBuild) {
+  buildConfig.archives = [
+    {
+      outFile: `dist/${addonVersionForHumans}/${addonVersionForHumans}.mcaddon`,
+    },
+    {
+      outFile: `dist/${addonVersionForHumans}/${addonVersionForHumans}.zip`,
+    },
+  ];
+}
+
+await build(buildConfig);
+```
+
+This one uses environment variables extensively to set values conditionally:
+
+- `DEV`: Enables dev build.
+- `DEV_BP_OUTDIR`: Sets behavior pack output location when `DEV=true`.
+- `DEV_RP_OUTDIR`: Sets resource pack output location when `DEV=true`.
+- `ADDON_VERSION`: Sets addon version. For example, `ADDON_VERSION=0.6.9` will set your release build version to v0.6.9.
+- `WATCH`: Enables watch mode (detect changes and recompile in real time)
+
+ganban's `getRequiredEnv()` and `getRequiredEnvWithFallback()` are nice helper functions for this case.
 
 </details>
