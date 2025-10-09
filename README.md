@@ -66,7 +66,8 @@ Actually, there is no fixed concept of a "configuration file." **As long as you 
 
 However, most of the examples below assume that you create a file named `ganban.mjs` in the root of your project.
 
-### Example #1 - Super basic (not very practical)
+<details>
+  <summary>Example #1 - Basics (not very practical)</summary>
 
 This is just an example to give you an idea of how the configuration works, but it's not enough to actually put it into real use.
 
@@ -97,25 +98,11 @@ To run ganban with this configuration:
 node ganban.mjs
 ```
 
-### Example #2 - Practical and intended approach
+</details>
 
-[What are environment variables](https://www.reddit.com/r/linux4noobs/comments/1ger3jc/what_is_environment_variable_what_do_they_do_why/)
+<details>
+  <summary>Example #2 - Ultimate practical approach</summary>
 
-```javascript
-// ganban.mjs
-import { build, getRequiredEnv, getRequiredEnvWithFallback } from "ganban";
+TODO
 
-build({
-  behaviorPack: {
-    type: "behavior",
-    srcDir: "src/bp",
-    outDir: getRequiredEnv("BP_OUTDIR"),
-  },
-  resourcePack: {
-    type: "resource",
-    srcDir: "src/rp",
-    outDir: getRequiredEnv("RP_OUTDIR"),
-  },
-  watch: Boolean(getRequiredEnvWithFallback("WATCH", "")),
-});
-```
+</details>
