@@ -1,37 +1,47 @@
 # ganban
 
-A simple Minecraft Bedrock add-on compiler.
+ganban allows for smoother Minecraft Bedrock add-on development than the traditional approach where packs are scattered across separate development_behavior_packs and/or development_resource_packs folders.
 
-<details>
-  <summary>What?</summary>
+## Introduction
 
-By default, when developing add-ons, you place the pack folder directly in development_behavior_packs and/or development_resource_packs in com.mojang and work there.
-While it's possible to develop that way, and most people do, there's a better way.
+The dispersed locations of packs can require multiple code editor windows to be opened for a single add-on, and implementing a version control system (like Git) can be difficult. :worried:
 
-A better approach is to work in one centralized "project folder" away from the com.mojang folder, and have some tool automate the build process.
+With ganban, you can work with each pack inside a single "project folder".
+<ins>But you don't want to have to copy and paste your packs into folders like development_behavior_packs every time?
+Don't worry, ganban automates that part (with added bonuses).</ins>
 
-In fact, this idea itself is not old and has already been successfully implemented in well-known tools.
-However, I found that existing tools for achieving this were complex and often forced specific workflows.
+With ganban, you can create a project folder structure like this:
 
-I created **ganban**, an npm package that you can simply add as a dev dependency to your project.
+```
+.
+├── ganban.mjs (ganban config file)
+└── packs/
+    ├── bp/
+    │   └── ... behavior pack files ...
+    └── rp/
+        └── ... resource pack files...
+```
 
-I created it so that smooth add-on development can be achieved by writing a little configuration and the code that calls the ganban's `build({})` function in one JavaScript file.
+This has several benefits:
 
-</details>
+- Easier navigation between packs.
+- Easily integrate development tools into your add-on.
+- Makes source control (with Git) possible.
+- Allows you to keep your source files outside of com.mojang.
 
-## What can ganban do
+Now comes the most exciting part: <ins>ganban will "compile" your add-on and output each pack to a location you specify (e.g., in com.mojang).</ins>
 
-- Realization of a "project folder" to hold each pack.
-  - Easier navigation between packs.
-  - Easier source control (Git).
-  - Isolated from com.mojang.
-- Output (compile) each pack to a user-specified "destination" folders. During compilation, ganban can do:
-  - Simple file synchronization (copies source files to destination).
-  - [JSON5](https://json5.org/)-to-JSON conversion: automatically converts JSON5 files into plain JSON.
-  - Behavior pack script compilation (powered by [esbuild](https://esbuild.github.io/)).
-  - Resource pack `texture_list.json` file generation.
-- Archive file generation.
-  - Takes the compiled folder(s) and generates a mcpack/mcaddon file.
+During that process, ganban can:
+
+- Sync files (copies source files to destination).
+- Convert [JSON5](https://json5.org/) files into plain JSON on the fly.
+- Optionally compile/bundle behavior pack script (powered by [esbuild](https://esbuild.github.io/)).
+  - Easily integrate TypeScript (but you don't have to).
+  - It can bundle external packages. For example, you can install and use [glMatrix](https://glmatrix.net/) for Vector calculations, or create your own utility library and use it, etc.
+- Optionally generate `texture_list.json` in resource pack.
+- Optionally generates zip, mcpack, or mcaddon archive.
+
+There's even a "watch mode" that will recompile in real time when it detects changes in either pack folder!
 
 ## Prerequisites
 
@@ -40,8 +50,6 @@ Make sure you have these tools installed on your system.
 - Node.js (v22 or newer)
 
 ## Installation
-
-Make sure you read the [prerequisites](#prerequisites).
 
 1. Create a folder somewhere, which will be your project folder.
 
@@ -52,16 +60,18 @@ Make sure you read the [prerequisites](#prerequisites).
 npm install --save-dev ganban
 ```
 
-## Configuration
+## Configuration Examples
 
-> [!NOTE]
-> It's difficult to cover all possible configurations, so please use the autocomplete feature (LSP) of your code editor (Ctrl+Space in Visual Studio Code), to see the available options.
+Actually, there is no fixed concept of a "configuration file." **As long as you can call the build function from ganban package, any JavaScript/TypeScript file will do (it can be from anywhere).**
 
-### Example #1 - Basic behavior pack and resource pack
+However, most of the examples below assume that you create a file named `ganban.mjs` in the root of your project.
 
-Create a new file named something like `ganban.mjs` somewhere inside your project folder. Any name or path is fine as long as you can write JavaScript in the file.
+### Example #1 - Super basic (not very practical)
+
+This is just an example to give you an idea of how the configuration works, but it's not enough to actually put it into real use.
 
 ```javascript
+// ganban.mjs
 import { build } from "ganban";
 
 build({
@@ -85,4 +95,27 @@ To run ganban with this configuration:
 
 ```bash
 node ganban.mjs
+```
+
+### Example #2 - Practical and intended approach
+
+[What are environment variables](https://www.reddit.com/r/linux4noobs/comments/1ger3jc/what_is_environment_variable_what_do_they_do_why/)
+
+```javascript
+// ganban.mjs
+import { build, getRequiredEnv, getRequiredEnvWithFallback } from "ganban";
+
+build({
+  behaviorPack: {
+    type: "behavior",
+    srcDir: "src/bp",
+    outDir: getRequiredEnv("BP_OUTDIR"),
+  },
+  resourcePack: {
+    type: "resource",
+    srcDir: "src/rp",
+    outDir: getRequiredEnv("RP_OUTDIR"),
+  },
+  watch: Boolean(getRequiredEnvWithFallback("WATCH", "")),
+});
 ```
