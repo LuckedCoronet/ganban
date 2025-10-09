@@ -62,7 +62,7 @@ npm install --save-dev ganban
 
 ## Configuration Examples
 
-Actually, there is no fixed concept of a "configuration file." **As long as you can call the build function from ganban package, any JavaScript/TypeScript file will do (it can be from anywhere).**
+Actually, there is no fixed concept of a "configuration file." **As long as you can call ganban's `build'()` function, any JavaScript/TypeScript file will do (it can be from anywhere).**
 
 However, most of the examples below assume that you create a file named `ganban.mjs` in the root of your project.
 
@@ -101,7 +101,7 @@ node ganban.mjs
 </details>
 
 <details>
-  <summary>Example #2 - Practical and useful</summary>
+  <summary>Example #2 - Advanced and practical</summary>
 
 This one is actually pratical and I've writtem something like this in my own add-ons.
 
@@ -227,12 +227,12 @@ if (!isDevBuild) {
 await build(buildConfig);
 ```
 
-This one uses environment variables extensively to set values conditionally:
+This one uses environment variables extensively:
 
 - `DEV`: Enables dev build.
 - `DEV_BP_OUTDIR`: Sets behavior pack output location when `DEV=true`.
 - `DEV_RP_OUTDIR`: Sets resource pack output location when `DEV=true`.
-- `ADDON_VERSION`: Sets addon version. For example, `ADDON_VERSION=0.6.9` will set your release build version to v0.6.9.
+- `ADDON_VERSION`: Sets addon version. For example, `ADDON_VERSION=0.1.0` will set your release build version to v0.1.0.
 - `WATCH`: Enables watch mode (detect changes and recompile in real time)
 
 ganban's `getRequiredEnv()` and `getRequiredEnvWithFallback()` are nice helper functions for this case.
@@ -276,3 +276,12 @@ npx dotenv -v ADDON_VERSION=0.6.9 -- node ganban.mjs
 Release build v0.6.9 should be generated inside the dist/ folder.
 
 </details>
+
+## Additional Resources
+
+- Add-on development:
+  - [MS Docs](https://learn.microsoft.com/en-us/minecraft/creator/?view=minecraft-bedrock-stable)
+  - [bedrock.dev](https://bedrock.dev/)
+  - [Bedrock Wiki](https://wiki.bedrock.dev/)
+- Other
+  - [tsx](https://tsx.is/) (This lets you run TypeScript very easily!)
