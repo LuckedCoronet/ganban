@@ -3,6 +3,8 @@ import { createLogger, type Logger } from "@/utils/logger";
 import { compilePack, type CompilePackResult, type PackCache } from "./compile-pack";
 import type { BuildConfig } from "./config";
 import { watchPack } from "./pack-watcher";
+import { createArchive, type ArchiveSourceDirectory } from "./archive-generation";
+import path from "node:path";
 
 type CompileContext = {
 	config: BuildConfig;
@@ -19,9 +21,11 @@ type CompileResult = {
 };
 
 const compilePacks = async (ctx: CompileContext): Promise<CompileResult> => {
-	const { config, behaviorPackCache, resourcePackCache, isInitialCompile, signal } = ctx;
+	const { config, behaviorPackCache, resourcePackCache, isInitialCompile, log, signal } = ctx;
 
 	signal?.throwIfAborted();
+
+	const archiveSourceDirs: ArchiveSourceDirectory[] = [];
 
 	let behaviorPackBuildPromise: Promise<CompilePackResult> | undefined = undefined;
 	let resourcePackBuildPromise: Promise<CompilePackResult> | undefined = undefined;
@@ -37,6 +41,11 @@ const compilePacks = async (ctx: CompileContext): Promise<CompileResult> => {
 			isInitialCompile,
 			signal,
 		});
+
+		archiveSourceDirs.push({
+			name: "behavior_pack",
+			path: path.resolve(config.behaviorPack.outDir),
+		});
 	}
 
 	if (config.resourcePack) {
@@ -50,9 +59,25 @@ const compilePacks = async (ctx: CompileContext): Promise<CompileResult> => {
 			isInitialCompile,
 			signal,
 		});
+
+		archiveSourceDirs.push({
+			name: "resource_pack",
+			path: path.resolve(config.resourcePack.outDir),
+		});
 	}
 
 	const results = await Promise.allSettled([behaviorPackBuildPromise, resourcePackBuildPromise]);
+
+	if (config.archives) {
+		log.debug("Generating archive(s)...");
+
+		for (const archiveOptions of config.archives) {
+			await createArchive(archiveSourceDirs, archiveOptions.outFile, {
+				logger: log,
+				signal,
+			});
+		}
+	}
 
 	return {
 		behaviorPack: results[0],
