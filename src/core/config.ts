@@ -4,7 +4,7 @@ import type * as esbuild from "esbuild";
 export type BuildConfig = {
 	behaviorPack?: BehaviorPackConfig;
 	resourcePack?: ResourcePackConfig;
-	createArchive?: BuildArchiveConfig;
+	archives?: BuildArchiveConfig[];
 	watch?: boolean;
 	logLevel?: LogLevel;
 };
