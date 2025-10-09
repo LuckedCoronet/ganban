@@ -279,9 +279,10 @@ Release build v0.6.9 should be generated inside the dist/ folder.
 
 ## Additional Resources
 
-- Add-on development:
+- Add-on development
   - [MS Docs](https://learn.microsoft.com/en-us/minecraft/creator/?view=minecraft-bedrock-stable)
   - [bedrock.dev](https://bedrock.dev/)
   - [Bedrock Wiki](https://wiki.bedrock.dev/)
 - Other
   - [tsx](https://tsx.is/) (This lets you run TypeScript very easily!)
+  - [My Minecraft projects](https://github.com/orgs/lc-studios-mc/repositories)
