@@ -14,6 +14,7 @@ export type PackConfig = BehaviorPackConfig | ResourcePackConfig;
 export type CommonPackConfig = {
 	srcDir: string;
 	outDir: string;
+	targetDirs?: string[];
 	manifest?: Record<string, unknown>;
 	include?: string[];
 	exclude?: string[];

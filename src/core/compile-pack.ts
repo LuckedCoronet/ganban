@@ -250,6 +250,32 @@ const writeManifestFileIfNeeded = async (ctx: CompilePackContext): Promise<void>
 	log.debug("Written manifest.");
 };
 
+const copyOutputToTargetDirs = async (
+	ctx: CompilePackContext,
+	outDir: string,
+	targetDirs: string[],
+): Promise<void> => {
+	const { log, signal } = ctx;
+
+	log.info(`Copying output to ${targetDirs.length} target dir(s)...`);
+
+	for (const targetDir of targetDirs) {
+		signal?.throwIfAborted();
+
+		const fullTargetDir = path.resolve(targetDir);
+
+		try {
+			await fs.ensureDir(path.dirname(fullTargetDir));
+			await fs.copy(outDir, fullTargetDir, { preserveTimestamps: true });
+			log.info(`Copied to ${fullTargetDir}`);
+		} catch (error) {
+			throw new Error(`Could not copy to ${fullTargetDir}: ${error}`);
+		}
+	}
+
+	log.info("All copied");
+};
+
 export const compilePack = async (ctx: CompilePackContext): Promise<CompilePackResult> => {
 	const { packConfig, log, signal } = ctx;
 	const srcDir = path.resolve(packConfig.srcDir);
@@ -306,7 +332,12 @@ export const compilePack = async (ctx: CompilePackContext): Promise<CompilePackR
 		writeManifestFileIfNeeded(ctx),
 	]);
 
-	log.info("Compiled!");
+	log.info(`Compiled successfully! Output dir: ${outDir}`);
+
+	const targetDirs = ctx.packConfig.targetDirs;
+	if (targetDirs && targetDirs.length > 0) {
+		await copyOutputToTargetDirs(ctx, outDir, targetDirs);
+	}
 
 	return { newCache };
 };
