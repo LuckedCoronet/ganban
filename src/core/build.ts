@@ -85,7 +85,7 @@ const compilePacks = async (ctx: CompileContext): Promise<CompileResult> => {
 	};
 };
 
-export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<void> => {
+const buildInternal = async (config: BuildConfig, signal?: AbortSignal): Promise<void> => {
 	signal?.throwIfAborted();
 
 	const minLogLevel = config.logLevel;
@@ -208,4 +208,22 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 	log.debug(`Waiting for ${watchPromises.length} watchers to be closed...`);
 
 	await Promise.all(watchPromises);
+};
+
+export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<void> => {
+	const internalController = new AbortController();
+
+	const abortBuild = () => {
+		internalController.abort();
+	};
+
+	signal?.addEventListener("abort", abortBuild, { once: true });
+	process.once("SIGINT", abortBuild);
+
+	try {
+		await buildInternal(config, internalController.signal);
+	} finally {
+		signal?.removeEventListener("abort", abortBuild);
+		process.off("SIGINT", abortBuild);
+	}
 };
