@@ -53,7 +53,7 @@ export async function createArchive(
 
 		// Abort handler to destroy the archive stream on cancellation.
 		const abortHandler = () => {
-			archive.destroy(new Error("Operation was aborted."));
+			archive.destroy();
 		};
 
 		// Centralized error handler.

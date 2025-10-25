@@ -98,12 +98,12 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 		throw new Error("Neither behaviorPack nor resourcePack is configured.");
 	}
 
-	const behaviorPackCache: PackCache = {};
-	const resourcePackCache: PackCache = {};
+	let behaviorPackCache: PackCache = {};
+	let resourcePackCache: PackCache = {};
 
-	const runBuild = async (isInitialCompile = true): Promise<void> => {
+	const runBuild = async (isInitialCompile = true, subSignal = signal): Promise<void> => {
 		try {
-			signal?.throwIfAborted();
+			subSignal?.throwIfAborted();
 
 			log.info("Build started");
 
@@ -115,7 +115,7 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 				behaviorPackCache,
 				resourcePackCache,
 				isInitialCompile,
-				signal,
+				signal: subSignal,
 			});
 
 			const endTime = performance.now();
@@ -125,10 +125,14 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 
 			if (result.behaviorPack?.status === "rejected") {
 				log.error(`There was an error compiling behaviorPack: ${result.behaviorPack.reason}`);
+			} else if (result.behaviorPack?.status === "fulfilled") {
+				behaviorPackCache = result.behaviorPack.value?.newCache ?? {};
 			}
 
 			if (result.resourcePack?.status === "rejected") {
 				log.error(`There was an error compiling resourcePack: ${result.resourcePack.reason}`);
+			} else if (result.resourcePack?.status === "fulfilled") {
+				behaviorPackCache = result.resourcePack.value?.newCache ?? {};
 			}
 		} catch (error) {
 			if (error instanceof Error && error.name === "AbortError") {
@@ -145,23 +149,63 @@ export const build = async (config: BuildConfig, signal?: AbortSignal): Promise<
 
 	signal?.throwIfAborted();
 
-	const runBuildDebounced = debounce(
-		async () => {
-			log.info(`File change(s) detected. Recompiling...`);
-			await runBuild();
-		},
-		100,
-		signal,
-	);
-	const onChangeDetected = runBuildDebounced;
+	let rebuildController: AbortController | undefined = undefined;
+
+	const rebuild = async () => {
+		log.info(`File change(s) detected. Rebuilding...`);
+
+		if (rebuildController && !rebuildController.signal.aborted) {
+			log.warn("Previous build is still in progress! Aborting...");
+
+			const ctrl = rebuildController;
+			rebuildController = undefined;
+			ctrl.abort();
+		}
+
+		rebuildController = new AbortController();
+
+		// Make sure to abort rebuild when the main abort signal is triggered
+		const onMainSignalAbort = () => {
+			rebuildController?.abort();
+		};
+		signal?.addEventListener("abort", onMainSignalAbort, { once: true });
+
+		try {
+			await runBuild(false, rebuildController.signal);
+		} finally {
+			signal?.removeEventListener("abort", onMainSignalAbort);
+			rebuildController = undefined;
+
+			log.info("Rebuild finished. Watching for further changes...");
+		}
+	};
+
+	const incrementalBuildDebounced = debounce(rebuild, 100, signal);
 
 	const watchPromises: Promise<void>[] = [];
-	if (config.behaviorPack)
-		watchPromises.push(watchPack({ pack: config.behaviorPack, log, onChangeDetected, signal }));
-	if (config.resourcePack)
-		watchPromises.push(watchPack({ pack: config.resourcePack, log, onChangeDetected, signal }));
+	if (config.behaviorPack) {
+		watchPromises.push(
+			watchPack({
+				pack: config.behaviorPack,
+				log,
+				onChangeDetected: incrementalBuildDebounced,
+				signal,
+			}),
+		);
+	}
 
-	log.debug(`Waiting for ${watchPromises.length} watchers to be closed/aborted...`);
+	if (config.resourcePack) {
+		watchPromises.push(
+			watchPack({
+				pack: config.resourcePack,
+				log,
+				onChangeDetected: incrementalBuildDebounced,
+				signal,
+			}),
+		);
+	}
+
+	log.debug(`Waiting for ${watchPromises.length} watchers to be closed...`);
 
 	await Promise.all(watchPromises);
 };
