@@ -4,8 +4,8 @@ import fs from "fs-extra";
 import { glob } from "glob";
 import JSON5 from "json5";
 import path from "node:path";
-import type { PackConfig } from "./config";
-import { bundleScripts } from "./bundle-scripts";
+import type { PackConfig } from "../config";
+import { bundleScripts } from "../bundle-scripts";
 
 export type PackCache = {
 	[file: string]: {

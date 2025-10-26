@@ -1,4 +1,4 @@
-export { build } from "./core/build";
+export { build } from "./core/.old/build";
 export * from "./core/config";
 export { getRequiredEnv, getRequiredEnvWithFallback } from "./utils/env";
 export { getMinecraftPackageVersions, parseVersionString } from "./utils/version";

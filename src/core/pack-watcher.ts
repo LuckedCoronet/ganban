@@ -1,7 +1,7 @@
 import type { Logger } from "@/utils/logger";
 import * as chokidar from "chokidar";
 import path from "node:path";
-import { shouldInclude } from "./compile-pack";
+import { shouldInclude } from "./.old/compile-pack";
 import type { PackConfig } from "./config";
 
 export const watchPack = async (ctx: {

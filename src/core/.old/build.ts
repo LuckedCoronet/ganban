@@ -1,9 +1,9 @@
 import { debounce } from "@/utils/debounce";
 import { createLogger, type Logger } from "@/utils/logger";
 import { compilePack, type CompilePackResult, type PackCache } from "./compile-pack";
-import type { BuildConfig } from "./config";
-import { watchPack } from "./pack-watcher";
-import { createArchive, type ArchiveSourceDirectory } from "./archive-generation";
+import type { BuildConfig } from "../config";
+import { watchPack } from "../pack-watcher";
+import { createArchive, type ArchiveSourceDirectory } from "../archive-generation";
 import path from "node:path";
 
 type CompileContext = {
