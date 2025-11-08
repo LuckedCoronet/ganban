@@ -1,3 +1,7 @@
+> [!IMPORTANT]
+> **ganban is now deprecated!**
+> Please use [@mcbe-toolbox-lc/builder](https://github.com/mcbe-toolbox-lc/builder) instead.
+
 # ganban
 
 ganban allows for smoother Minecraft Bedrock add-on development than the traditional approach where packs are scattered across separate development_behavior_packs and/or development_resource_packs folders.
